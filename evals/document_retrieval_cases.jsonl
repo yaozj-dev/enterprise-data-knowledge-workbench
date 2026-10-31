@@ -1,0 +1,30 @@
+{"query":"报销差旅费需要提交哪些材料","expected_document_id":"expense-policy","expected_page_number":1}
+{"query":"发票和审批单如何用于费用报销","expected_document_id":"expense-policy","expected_page_number":1}
+{"query":"财务什么时候支付员工报销款","expected_document_id":"expense-policy","expected_page_number":1}
+{"query":"请三天年假由谁批准","expected_document_id":"leave-process","expected_page_number":1}
+{"query":"紧急病假当天应该怎么做","expected_document_id":"leave-process","expected_page_number":1}
+{"query":"考勤系统怎么提交事假申请","expected_document_id":"leave-process","expected_page_number":1}
+{"query":"申请数据权限要提供哪些信息","expected_document_id":"access-control","expected_page_number":1}
+{"query":"IT 服务台多久开通业务系统账号","expected_document_id":"access-control","expected_page_number":1}
+{"query":"谁负责审批系统角色权限","expected_document_id":"access-control","expected_page_number":1}
+{"query":"客户数据能否发送到个人邮箱","expected_document_id":"security-policy","expected_page_number":1}
+{"query":"遇到钓鱼邮件需要报告给谁","expected_document_id":"security-policy","expected_page_number":1}
+{"query":"电脑丢失后的信息安全处理要求","expected_document_id":"security-policy","expected_page_number":1}
+{"query":"采购办公用品的申请入口在哪里","expected_document_id":"procurement-policy","expected_page_number":1}
+{"query":"五千元以上的采购如何审批","expected_document_id":"procurement-policy","expected_page_number":1}
+{"query":"采购下单前是否需要比价","expected_document_id":"procurement-policy","expected_page_number":1}
+{"query":"线上故障发生后十五分钟内要完成什么","expected_document_id":"incident-process","expected_page_number":1}
+{"query":"生产事故恢复后何时提交根因分析","expected_document_id":"incident-process","expected_page_number":1}
+{"query":"值班人员发现服务异常后的应急流程","expected_document_id":"incident-process","expected_page_number":1}
+{"query":"新员工第一周必须完成哪些培训","expected_document_id":"onboarding-guide","expected_page_number":1}
+{"query":"入职前 IT 需要准备什么","expected_document_id":"onboarding-guide","expected_page_number":1}
+{"query":"新同事的首周计划由谁制定","expected_document_id":"onboarding-guide","expected_page_number":1}
+{"query":"客户退款请求多久要回复","expected_document_id":"customer-service","expected_page_number":1}
+{"query":"质量问题售后需要创建什么工单","expected_document_id":"customer-service","expected_page_number":1}
+{"query":"处理客户换货前需要核验哪些内容","expected_document_id":"customer-service","expected_page_number":1}
+{"query":"出差前需要填写哪些信息","expected_document_id":"travel-policy","expected_page_number":1}
+{"query":"公司差旅酒店应该通过什么渠道预订","expected_document_id":"travel-policy","expected_page_number":1}
+{"query":"出差结束后多久完成报销","expected_document_id":"travel-policy","expected_page_number":1}
+{"query":"个人信息到期后怎样处理","expected_document_id":"data-retention","expected_page_number":1}
+{"query":"批量删除业务数据前需要保留什么记录","expected_document_id":"data-retention","expected_page_number":1}
+{"query":"数据负责人如何处理到期数据","expected_document_id":"data-retention","expected_page_number":1}

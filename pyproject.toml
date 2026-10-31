@@ -1,0 +1,47 @@
+[project]
+name = "enterprise-data-knowledge-workbench"
+version = "0.1.0"
+description = "Enterprise data analysis and policy knowledge question-answering workbench"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "asyncmy>=0.2.14",
+    "cryptography>=46.0.7",
+    "elasticsearch[async]>=8,<9",
+    "fastapi[standard]>=0.135.3",
+    "greenlet>=3.4.0",
+    "huggingface-hub>=1.10.1",
+    "jieba>=0.42.1",
+    "langchain>=1.2.15",
+    "langchain-deepseek>=1.0.1",
+    "langchain-huggingface>=1.2.1",
+    "langgraph>=1.1.6",
+    "loguru>=0.7.3",
+    "mcp>=1,<2",
+    "omegaconf>=2.3.0",
+    "opentelemetry-api>=1.30.0",
+    "opentelemetry-exporter-otlp-proto-http>=1.30.0",
+    "opentelemetry-sdk>=1.30.0",
+    "pypdf>=5.0.0",
+    "python-docx>=1.1.0",
+    "python-dotenv>=1.2.2",
+    "pyyaml>=6.0.3",
+    "qdrant-client>=1.17.1",
+    "redis>=5.2.0",
+    "sqlalchemy>=2.0.49",
+]
+
+[dependency-groups]
+dev = [
+    "pre-commit>=4.3.0",
+    "pytest>=8.0.0",
+    "ruff>=0.11.0",
+]
+
+[tool.ruff]
+line-length = 88
+target-version = "py314"
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+ignore = ["E501"]

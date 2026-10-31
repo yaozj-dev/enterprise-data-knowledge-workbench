@@ -1,0 +1,10 @@
+{"document_id":"expense-policy","filename":"expense-policy.md","page_number":1,"content":"费用报销制度：员工报销差旅、交通或业务招待费用时，需要在费用系统提交报销单，上传合法发票、行程单和审批记录。直属经理先审批，财务复核后在每月工资日付款。"}
+{"document_id":"leave-process","filename":"leave-process.md","page_number":1,"content":"请假流程：员工应在考勤系统发起年假、病假或事假申请，填写请假日期和原因。三天以内由直属经理审批，三天以上还需要部门负责人审批；紧急病假应在当天通知主管。"}
+{"document_id":"access-control","filename":"access-control.md","page_number":1,"content":"系统权限申请规范：申请业务系统账号或数据权限时，申请人需要说明系统名称、所需角色、业务用途和有效期。直属经理和系统数据负责人审批后，IT 服务台在两个工作日内开通权限。"}
+{"document_id":"security-policy","filename":"security-policy.md","page_number":1,"content":"信息安全制度：禁止将客户数据、账号密码或内部源代码发送到个人邮箱和未授权网盘。发生疑似数据泄露、钓鱼邮件或设备丢失时，应立即向信息安全团队报告，并保留现场证据。"}
+{"document_id":"procurement-policy","filename":"procurement-policy.md","page_number":1,"content":"办公用品采购流程：员工先在采购平台提交办公用品申请，填写品类、数量和预算。预算五千元以下由部门经理审批，超过五千元需要采购部门比价并由财务确认后下单。"}
+{"document_id":"incident-process","filename":"incident-process.md","page_number":1,"content":"生产事故处理规范：发现线上服务故障后，值班人员应在十五分钟内建立事故群、标记事故等级并通知负责人。恢复服务后两个工作日内提交根因分析、影响范围和改进措施。"}
+{"document_id":"onboarding-guide","filename":"onboarding-guide.md","page_number":1,"content":"新员工入职流程：入职前由 HR 创建员工档案，IT 准备电脑和企业账号，直属经理制定首周培训计划。新员工在第一周完成信息安全培训和团队业务介绍。"}
+{"document_id":"customer-service","filename":"customer-service.md","page_number":1,"content":"客户售后处理规范：收到退款、换货或投诉请求后，客服需要在一个工作日内响应，并核验订单编号和商品状态。涉及质量问题时，创建售后工单并同步仓储或供应商处理进度。"}
+{"document_id":"travel-policy","filename":"travel-policy.md","page_number":1,"content":"出差管理制度：员工出差前应提交出差申请，写明目的地、日期、客户拜访计划和预算。机票、酒店应优先使用公司协议渠道预订；出差结束后五个工作日内完成费用报销。"}
+{"document_id":"data-retention","filename":"data-retention.md","page_number":1,"content":"数据留存规范：业务数据按照数据分类分级要求保存，个人信息仅在业务必要期限内保留。到期数据应由数据负责人确认后执行删除或匿名化，任何批量删除操作需要留存审批和操作日志。"}

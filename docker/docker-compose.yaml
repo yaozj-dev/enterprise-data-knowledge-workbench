@@ -1,0 +1,250 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD:?Set MYSQL_ROOT_PASSWORD in .env}"
+      MYSQL_DATABASE: meta
+      MYSQL_USER: "${DB_META_USER:?Set DB_META_USER in .env}"
+      MYSQL_PASSWORD: "${DB_META_PASSWORD:?Set DB_META_PASSWORD in .env}"
+      MYSQL_AGENT_READONLY_USER: "${MYSQL_AGENT_READONLY_USER:?Set MYSQL_AGENT_READONLY_USER in .env}"
+      MYSQL_AGENT_READONLY_PASSWORD: "${MYSQL_AGENT_READONLY_PASSWORD:?Set MYSQL_AGENT_READONLY_PASSWORD in .env}"
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql:/docker-entrypoint-initdb.d
+    command: --character-set-server=utf8mb4
+      --collation-server=utf8mb4_general_ci
+
+  elasticsearch:
+    build: ./elasticsearch
+    container_name: elasticsearch
+    restart: unless-stopped
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: "false"
+      # Keep the local development stack within Docker Desktop's default
+      # memory budget so the optional CPU reranker can be benchmarked.
+      ES_JAVA_OPTS: "-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+  kibana:
+    image: kibana:8.19.10
+    container_name: kibana
+    restart: unless-stopped
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+
+  qdrant:
+    image: qdrant/qdrant:v1.16
+    container_name: qdrant
+    restart: unless-stopped
+    ports:
+      - "6333:6333" # HTTP
+      - "6334:6334" # gRPC
+    volumes:
+      - qdrant_data:/qdrant/storage
+
+  embedding:
+    image: ghcr.io/huggingface/text-embeddings-inference:cpu-1.8
+    platform: linux/amd64
+    container_name: embedding
+    restart: unless-stopped
+    ports:
+      - "8081:80"
+    environment:
+      MODEL_ID: /models/bge-large-zh-v1.5
+      MAX_CONCURRENT_REQUESTS: "16"
+      MAX_BATCH_TOKENS: "16384"
+    volumes:
+      - ./embedding/bge-large-zh-v1.5:/models/bge-large-zh-v1.5
+    # TEI can accept HTTP connections before the local model has finished
+    # warming up. Downstream services must wait for this readiness signal.
+    healthcheck:
+      test: ["CMD", "sh", "-c", "curl -fsS -o /dev/null http://127.0.0.1/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 36
+      start_period: 60s
+
+  reranker:
+    image: ghcr.io/huggingface/text-embeddings-inference:cpu-1.9
+    platform: linux/amd64
+    container_name: enterprise-data-reranker
+    profiles: ["ranking"]
+    # This is an opt-in, high-memory benchmark service. Do not reload a
+    # multi-gigabyte model automatically after every Docker Desktop restart.
+    restart: "no"
+    ports:
+      - "8082:80"
+    environment:
+      MODEL_ID: /models/bge-reranker-v2-m3
+      # TEI's CPU ORT backend supports float32 only. float16 makes the
+      # backend fail during startup and can leave the optional container in a
+      # restart loop.
+      DTYPE: "float32"
+      TOKENIZATION_WORKERS: "1"
+      MAX_CONCURRENT_REQUESTS: "1"
+      MAX_BATCH_TOKENS: "2048"
+      AUTO_TRUNCATE: "true"
+    # Keep the limits explicit so one CPU rerank request cannot overflow the
+    # backend queue. The service is optional and remains outside the default
+    # startup profile.
+    command:
+      [
+        "--json-output",
+        "--model-id",
+        "/models/bge-reranker-v2-m3",
+        "--dtype",
+        "float32",
+        "--tokenization-workers",
+        "1",
+        "--max-concurrent-requests",
+        "1",
+        "--max-batch-tokens",
+        "2048",
+        "--max-batch-requests",
+        "1",
+        "--max-client-batch-size",
+        "1",
+        "--auto-truncate",
+      ]
+    volumes:
+      - ./reranker/bge-reranker-v2-m3:/models/bge-reranker-v2-m3
+    healthcheck:
+      test: ["CMD", "sh", "-c", "curl -fsS -o /dev/null http://127.0.0.1/health"]
+      interval: 20s
+      timeout: 5s
+      retries: 24
+      start_period: 300s
+
+  redis:
+    image: redis:7-alpine
+    container_name: enterprise-data-redis
+    profiles: ["state"]
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory-policy", "allkeys-lru"]
+    volumes:
+      - redis_data:/data
+
+  backend:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: enterprise-data-backend
+    profiles: ["full"]
+    restart: unless-stopped
+    env_file:
+      - ../.env
+    environment:
+      APP_DB_PATH: /app/data/workbench.db
+      DB_META_HOST: mysql
+      DB_META_PORT: "3306"
+      DB_DW_HOST: mysql
+      DB_DW_PORT: "3306"
+      QDRANT_HOST: qdrant
+      QDRANT_PORT: "6333"
+      EMBEDDING_HOST: embedding
+      EMBEDDING_PORT: "80"
+      ES_HOST: elasticsearch
+      ES_PORT: "9200"
+      FILTER_TABLE_MAX_EXAMPLES: "${FILTER_TABLE_MAX_EXAMPLES:-3}"
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+      RERANKER_URL: ${RERANKER_URL-}
+      MCP_ALLOWED_HOSTS: "${MCP_ALLOWED_HOSTS:-localhost:*,127.0.0.1:*,[::1]:*,backend:*,enterprise-data-backend:*,mcp:*}"
+    ports:
+      - "8000:8000"
+    volumes:
+      - workbench_data:/app/data
+      - workbench_logs:/app/logs
+    depends_on:
+      mysql:
+        condition: service_started
+      elasticsearch:
+        condition: service_started
+      qdrant:
+        condition: service_started
+      embedding:
+        condition: service_healthy
+      mcp:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/openapi.json')"]
+      interval: 15s
+      timeout: 5s
+      retries: 8
+      start_period: 20s
+
+  mcp:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: enterprise-data-mcp
+    profiles: ["full"]
+    restart: unless-stopped
+    env_file:
+      - ../.env
+    environment:
+      DB_META_HOST: mysql
+      DB_META_PORT: "3306"
+      DB_DW_HOST: mysql
+      DB_DW_PORT: "3306"
+      QDRANT_HOST: qdrant
+      QDRANT_PORT: "6333"
+      EMBEDDING_HOST: embedding
+      EMBEDDING_PORT: "80"
+      ES_HOST: elasticsearch
+      ES_PORT: "9200"
+      MCP_ALLOWED_HOSTS: "${MCP_ALLOWED_HOSTS:-localhost:*,127.0.0.1:*,[::1]:*,backend:*,enterprise-data-backend:*,mcp:*}"
+    command: ["uv", "run", "uvicorn", "app.mcp.server:app", "--host", "0.0.0.0", "--port", "8000"]
+    expose:
+      - "8000"
+    depends_on:
+      mysql:
+        condition: service_started
+      elasticsearch:
+        condition: service_started
+      qdrant:
+        condition: service_started
+      embedding:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 15s
+      timeout: 5s
+      retries: 8
+      start_period: 20s
+
+  frontend:
+    build:
+      context: ..
+      dockerfile: frontend/Dockerfile
+    container_name: enterprise-data-frontend
+    profiles: ["full"]
+    restart: unless-stopped
+    ports:
+      - "5173:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/ || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  mysql_data:
+  es_data:
+  qdrant_data:
+  workbench_data:
+  workbench_logs:
+  redis_data:
